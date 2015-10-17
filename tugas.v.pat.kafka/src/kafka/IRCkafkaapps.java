@@ -23,26 +23,15 @@ import java.util.concurrent.TimeoutException;
  */
 public class IRCkafkaapps {
     private static String TOPIC = "lounge";
-
-
-//    public static void main(String[] argv){
-//        Properties properties = new Properties();
-//        properties.put("metadata.broker.list","localhost:9092");
-//        properties.put("serializer.class","kafka.serializer.StringEncoder");
-//        ProducerConfig producerConfig = new ProducerConfig(properties);
-//        kafka.javaapi.producer.Producer<String,String> producer = new kafka.javaapi.producer.Producer<String, String>(producerConfig);
-//        SimpleDateFormat sdf = new SimpleDateFormat();
-//        KeyedMessage<String, String> message =new KeyedMessage<String, String>(TOPIC,"Test message from java program " + sdf.format(new Date()));
-//        producer.send(message);
-//        producer.close();
-//    }
-    
     private static List<String> channellist = new ArrayList<>();
     private static String user;
     private static String[] usernamelist = {"lalala", "randomize", "fafafa", "anehkuz", "kuzma", "borma", "zip", "jomblo", "ceudih", "ceumungudh"};
     private String queueName;
     private static Hashtable<String, ChannelListener> source = new Hashtable<String,ChannelListener>(); 
     private static HashMap<String, ChannelListener> map = new HashMap(source);
+    
+    static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static Random rnd = new Random();
     
     public static void main(String[] argv)
         throws java.io.IOException, TimeoutException {
@@ -52,10 +41,10 @@ public class IRCkafkaapps {
             properties.put("serializer.class","kafka.serializer.StringEncoder");
             ProducerConfig producerConfig = new ProducerConfig(properties);
         
-            Random rnd = new Random();
-            int indeks = rnd.nextInt(usernamelist.length);
-            String Randusername = usernamelist[indeks] + rnd.nextInt(10000);
-            
+//            Random rnd = new Random();
+//            int indeks = rnd.nextInt(usernamelist.length);
+//            String Randusername = usernamelist[indeks] + rnd.nextInt(10000);
+            String Randusername = generate_nickname();
             
             user = Randusername;
             channellist.add("lounge");            
@@ -94,7 +83,7 @@ public class IRCkafkaapps {
                 } else if ((query = CommandRegexes.LEAVE.match(input)) != null) {
                     String channel_name = query[0];
                     if(map.containsKey(channel_name)){
-                        //map.get(channel_name).stop();
+                        map.get(channel_name).shutdown();
                         map.remove(channel_name);
                         channellist.remove(channellist.indexOf(channel_name));
                         System.out.println(" [x] you had leave '" + channel_name +"'");
@@ -137,7 +126,14 @@ public class IRCkafkaapps {
             
                 
     }
-    
+    public static String generate_nickname(){
+        int len = 7;
+        StringBuilder sb = new StringBuilder( len );
+        for( int i = 0; i < len; i++ ){
+           sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
+        }
+        return sb.toString();
+    }
     private static void deleteallchannel(){
         for (String channellist1 : channellist) {
             map.get(channellist1).shutdown();
